@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Command Center - Enhanced Solar System</title>
+    <title>Language Command Center - Solar System to Farming World</title>
     <style>
         body, html {
             margin: 0;
@@ -31,21 +31,21 @@
     <div id="language-name">Fly to a Planet to Choose a Language</div>
     <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/examples/js/libs/stats.min.js"></script>
     <script>
         let scene, camera, renderer, controls;
         let spaceship, planets = [];
         let selectedLanguage = null;
         let speed = 0.1, velocity = new THREE.Vector3();
-        let asteroids = [];
+        let farmingWorld = false;
+        let avatar, flowers = [];
 
         const planetData = [
-            { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 20 },
-            { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 30 },
-            { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 40 },
-            { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 50 },
-            { name: 'Greek', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 60 },
-            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 70 }
+            { name: 'C', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 20 },
+            { name: 'S', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 30 },
+            { name: 'P', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 40 },
+            { name: 'F', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 50 },
+            { name: 'G', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 60 },
+            { name: 'R', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 70 }
         ];
 
         init();
@@ -68,7 +68,7 @@
             controls.screenSpacePanning = false;
             controls.maxPolarAngle = Math.PI / 2;
 
-            // Space background
+            // Space background for solar system
             scene.background = new THREE.Color(0x000000);
             const starGeometry = new THREE.BufferGeometry();
             const starMaterial = new THREE.PointsMaterial({color: 0xffffff});
@@ -98,24 +98,14 @@
             spaceship.position.set(0, 0, 90);
             scene.add(spaceship);
 
-            // Beam effect
-            const beamGeometry = new THREE.CylinderGeometry(0.1, 0.1, 5, 32);
-            const beamMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
-            const beam = new THREE.Mesh(beamGeometry, beamMaterial);
-            beam.position.set(0, -1.25, 0);
-            beam.rotation.x = Math.PI / 2;
-            spaceship.add(beam);
-
             // Create planets
             planetData.forEach((data, index) => {
                 createPlanet(data, index);
             });
 
-            // Create asteroids and moons
-            createAsteroidsAndMoons();
-
             window.addEventListener('resize', onWindowResize, false);
             document.addEventListener('keydown', onKeyPress, false);
+            document.addEventListener('click', onClick, false);
         }
 
         function createPlanet(data, index) {
@@ -143,19 +133,50 @@
             scene.add(planet);
         }
 
-        function createAsteroidsAndMoons() {
-            for (let i = 0; i < 50; i++) {
-                const asteroidGeometry = new THREE.SphereGeometry(0.1, 16, 16);
-                const asteroidMaterial = new THREE.MeshBasicMaterial({color: 0x888888});
-                const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
-                asteroid.position.set(
-                    THREE.MathUtils.randFloatSpread(200),
-                    THREE.MathUtils.randFloatSpread(200),
-                    THREE.MathUtils.randFloatSpread(200)
-                );
-                asteroids.push(asteroid);
-                scene.add(asteroid);
+        function switchToFarmingWorld() {
+            farmingWorld = true;
+            document.getElementById('language-name').innerText = "Welcome to the Farming World";
+
+            // Clear the current scene
+            while (scene.children.length > 0) {
+                scene.remove(scene.children[0]);
             }
+
+            // Farming world setup
+            scene.background = new THREE.Color(0x87CEEB); // Sky blue
+
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshBasicMaterial({color: 0x228B22}); // Green
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
+
+            // Avatar
+            const avatarGeometry = new THREE.BoxGeometry(1, 2, 1);
+            const avatarMaterial = new THREE.MeshBasicMaterial({color: 0x8B4513}); // Brown
+            avatar = new THREE.Mesh(avatarGeometry, avatarMaterial);
+            avatar.position.set(0, 1, 0);
+            scene.add(avatar);
+
+            // Flowers
+            for (let i = 0; i < 50; i++) {
+                const flowerGeometry = new THREE.ConeGeometry(0.2, 0.5, 16);
+                const flowerMaterial = new THREE.MeshBasicMaterial({color: 0xFF69B4}); // Pink
+                const flower = new THREE.Mesh(flowerGeometry, flowerMaterial);
+                flower.position.set(
+                    THREE.MathUtils.randFloatSpread(50),
+                    0.25,
+                    THREE.MathUtils.randFloatSpread(50)
+                );
+                flower.rotation.x = Math.PI / 2;
+                flowers.push(flower);
+                scene.add(flower);
+            }
+
+            // Reset camera
+            camera.position.set(0, 5, 20);
+            controls.target.set(0, 1, 0);
+            controls.update();
         }
 
         function onWindowResize() {
@@ -165,22 +186,60 @@
         }
 
         function onKeyPress(event) {
-            switch (event.key) {
-                case 'w':
-                    velocity.z = -speed;
-                    break;
-                case 's':
-                    velocity.z = speed;
-                    break;
-                case 'a':
-                    velocity.x = -speed;
-                    break;
-                case 'd':
-                    velocity.x = speed;
-                    break;
-                case 'Enter':
-                    checkSelection();
-                    break;
+            if (!farmingWorld) {
+                switch (event.key) {
+                    case 'w':
+                        velocity.z = -speed;
+                        break;
+                    case 's':
+                        velocity.z = speed;
+                        break;
+                    case 'a':
+                        velocity.x = -speed;
+                        break;
+                    case 'd':
+                        velocity.x = speed;
+                        break;
+                    case 'Enter':
+                        checkSelection();
+                        break;
+                }
+            } else {
+                const moveSpeed = 0.5;
+                switch (event.key) {
+                    case 'w':
+                        avatar.position.z -= moveSpeed;
+                        break;
+                    case 's':
+                        avatar.position.z += moveSpeed;
+                        break;
+                    case 'a':
+                        avatar.position.x -= moveSpeed;
+                        break;
+                    case 'd':
+                        avatar.position.x += moveSpeed;
+                        break;
+                }
+                camera.position.set(avatar.position.x, avatar.position.y + 5, avatar.position.z + 20);
+                controls.target.set(avatar.position.x, avatar.position.y + 1, avatar.position.z);
+                controls.update();
+            }
+        }
+
+        function onClick(event) {
+            if (!farmingWorld) {
+                const mouse = new THREE.Vector2(
+                    (event.clientX / window.innerWidth) * 2 - 1,
+                    -(event.clientY / window.innerHeight) * 2 + 1
+                );
+
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, camera);
+
+                const intersects = raycaster.intersectObjects(planets);
+                if (intersects.length > 0) {
+                    switchToFarmingWorld();
+                }
             }
         }
 
@@ -197,31 +256,14 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Update spaceship position
-            spaceship.position.add(velocity);
-            camera.position.add(velocity);
+            if (!farmingWorld) {
+                // Update spaceship position
+                spaceship.position.add(velocity);
+                camera.position.add(velocity);
 
-            // Slow down velocity over time (inertia)
-            velocity.multiplyScalar(0.98);
-
-            // Animate asteroids and moons
-            asteroids.forEach(asteroid => {
-                asteroid.position.x += THREE.MathUtils.randFloatSpread(0.1);
-                asteroid.position.y += THREE.MathUtils.randFloatSpread(0.1);
-                asteroid.position.z += THREE.MathUtils.randFloatSpread(0.1);
-
-                // Leave a trace behind each asteroid
-                const trailGeometry = new THREE.SphereGeometry(0.05, 8, 8);
-                const trailMaterial = new THREE.MeshBasicMaterial({color: 0x666666, transparent: true, opacity: 0.5});
-                const trail = new THREE.Mesh(trailGeometry, trailMaterial);
-                trail.position.copy(asteroid.position);
-                scene.add(trail);
-
-                // Remove the trace after some time
-                setTimeout(() => {
-                    scene.remove(trail);
-                }, 500);
-            });
+                // Slow down velocity over time (inertia)
+                velocity.multiplyScalar(0.98);
+            }
 
             controls.update();
             renderer.render(scene, camera);
