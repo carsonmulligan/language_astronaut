@@ -26,17 +26,21 @@
             color: #000000;
             z-index: 2;
         }
-        #speed-slider {
+        #speed-slider, #planet-select {
             position: absolute;
             bottom: 20px;
             left: 20px;
             z-index: 2;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div id="language-name">Fly to a Planet to Choose a Language</div>
     <input id="speed-slider" type="range" min="1" max="10" value="1">
+    <select id="planet-select">
+        <option value="">Select a Planet</option>
+    </select>
     <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/examples/js/controls/OrbitControls.js"></script>
     <script>
@@ -97,6 +101,7 @@
         });
 
         // Create planets and place them based on their current orbital positions
+        const planets = [];
         planetsData.forEach((data) => {
             const planetGeometry = new THREE.SphereGeometry(data.size, 32, 32);
             const planetMaterial = new THREE.MeshBasicMaterial({ color: data.color });
@@ -124,6 +129,15 @@
                 textMesh.position.set(-data.size * 1.5, data.size + 2, 0);
                 planet.add(textMesh);
             });
+
+            // Add planet to array for future reference
+            planets.push({ name: data.name, mesh: planet });
+
+            // Add planet to dropdown menu
+            const option = document.createElement('option');
+            option.value = data.name;
+            option.text = data.name;
+            document.getElementById('planet-select').appendChild(option);
         });
 
         // Control speed using the slider
@@ -151,8 +165,26 @@
             }
         });
 
+        // Fly to selected planet
+        document.getElementById('planet-select').addEventListener('change', function(event) {
+            const selectedPlanetName = event.target.value;
+            const selectedPlanet = planets.find(planet => planet.name === selectedPlanetName);
+
+            if (selectedPlanet) {
+                // Smooth transition to the selected planet
+                new TWEEN.Tween(camera.position)
+                    .to({
+                        x: selectedPlanet.mesh.position.x,
+                        y: selectedPlanet.mesh.position.y + 10, // slightly above the planet
+                        z: selectedPlanet.mesh.position.z + 20 // a bit away from the planet
+                    }, 2000) // transition duration in milliseconds
+                    .easing(TWEEN.Easing.Quadratic.Out)
+                    .start();
+            }
+        });
+
         // Animation loop
-        function animate() {
+        function animate(time) {
             requestAnimationFrame(animate);
 
             // Update camera position based on velocity
@@ -162,11 +194,15 @@
             // Slow down velocity over time (inertia)
             velocity.multiplyScalar(0.98);
 
+            // Update TWEEN animations
+            TWEEN.update(time);
+
             renderer.render(scene, camera);
         }
 
         animate();
 
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 </body>
 </html>
