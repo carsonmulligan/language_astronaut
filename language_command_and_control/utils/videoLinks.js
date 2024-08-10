@@ -1,11 +1,17 @@
 export function loadVideoLinks(planet) {
-    // Logic to load video links associated with a specific planet
-    // ...
-    return Promise.resolve(links); // Return a promise with the links array
+    // Placeholder function to load video links based on the planet (this should connect to a backend or local storage)
+    return new Promise(resolve => {
+        const links = [
+            { url: 'https://www.youtube.com/watch?v=lFzbqFcePp8', label: 'Spanish Speech' }
+        ];
+        resolve(links);
+    });
 }
 
 export function saveVideoLink(planet, link) {
-    // Logic to save a new video link for a specific planet
-    // ...
-    return Promise.resolve(); // Return a promise when the save is complete
+    // Placeholder function to save a video link for a specific planet (this should connect to a backend or local storage)
+    return new Promise(resolve => {
+        console.log(`Saved link: ${link} for planet: ${planet}`);
+        resolve();
+    });
 }
