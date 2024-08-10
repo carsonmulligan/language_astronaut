@@ -38,14 +38,19 @@
         let speed = 0.1, velocity = new THREE.Vector3();
         let farmingWorld = false;
         let avatar, flowers = [];
+        let videoLinks = [];
 
         const planetData = [
-            { name: 'C', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 20 },
-            { name: 'S', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 30 },
-            { name: 'P', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 40 },
-            { name: 'F', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 50 },
-            { name: 'G', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 60 },
-            { name: 'R', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 70 }
+            { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 20 },
+            { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 30 },
+            { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 40 },
+            { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 50 },
+            { name: 'Greek', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 60 },
+            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 70 }
+        ];
+
+        const videoData = [
+            { language: 'Spanish', url: 'https://www.youtube.com/watch?v=lFzbqFcePp8', label: 'Spanish Speech' }
         ];
 
         init();
@@ -173,10 +178,36 @@
                 scene.add(flower);
             }
 
+            // Create floating video links
+            videoData.forEach((data, index) => {
+                createVideoLink(data, index);
+            });
+
             // Reset camera
             camera.position.set(0, 5, 20);
             controls.target.set(0, 1, 0);
             controls.update();
+        }
+
+        function createVideoLink(data, index) {
+            const loader = new THREE.FontLoader();
+            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+                const textGeometry = new THREE.TextGeometry(data.label, {
+                    font: font,
+                    size: 1,
+                    height: 0.1,
+                });
+                const textMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(
+                    THREE.MathUtils.randFloatSpread(50),
+                    2,
+                    THREE.MathUtils.randFloatSpread(50)
+                );
+                textMesh.url = data.url;
+                videoLinks.push(textMesh);
+                scene.add(textMesh);
+            });
         }
 
         function onWindowResize() {
@@ -239,6 +270,19 @@
                 const intersects = raycaster.intersectObjects(planets);
                 if (intersects.length > 0) {
                     switchToFarmingWorld();
+                }
+            } else {
+                const mouse = new THREE.Vector2(
+                    (event.clientX / window.innerWidth) * 2 - 1,
+                    -(event.clientY / window.innerHeight) * 2 + 1
+                );
+
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, camera);
+
+                const intersects = raycaster.intersectObjects(videoLinks);
+                if (intersects.length > 0) {
+                    window.open(intersects[0].object.url, '_blank');
                 }
             }
         }
