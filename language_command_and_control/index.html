@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Language Command Center - Enhanced Solar System</title>
+    <title>Interactive Solar System</title>
     <style>
         body, html {
             margin: 0;
@@ -24,44 +24,91 @@
             padding: 10px;
             font-size: 20px;
             color: #000000;
+            z-index: 2;
+        }
+        #speed-slider {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 2;
         }
     </style>
 </head>
 <body>
     <div id="language-name">Fly to a Planet to Choose a Language</div>
+    <input id="speed-slider" type="range" min="1" max="10" value="1">
     <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.120.1/examples/js/controls/OrbitControls.js"></script>
     <script>
         // Initialize scene, camera, and renderer
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
+        // OrbitControls for click and drag, zooming
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.25;
+        controls.screenSpacePanning = false;
+        controls.maxPolarAngle = Math.PI / 2;
+
         // Set camera position
-        camera.position.set(0, 10, 30);
+        camera.position.set(0, 500, 1500);
 
         // Add basic lighting
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
 
-        // Planets data
+        // Create star background
+        const starGeometry = new THREE.BufferGeometry();
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+        const starVertices = [];
+        for (let i = 0; i < 10000; i++) {
+            starVertices.push(THREE.MathUtils.randFloatSpread(2000)); // x
+            starVertices.push(THREE.MathUtils.randFloatSpread(2000)); // y
+            starVertices.push(THREE.MathUtils.randFloatSpread(2000)); // z
+        }
+        starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+        const stars = new THREE.Points(starGeometry, starMaterial);
+        scene.add(stars);
+
+        // Add the Sun
+        const sunGeometry = new THREE.SphereGeometry(5, 32, 32);
+        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        scene.add(sun);
+
+        // Planet data (distances in AU, scaled for visualization)
         const planetsData = [
-            { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 20 },
-            { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 30 },
-            { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 40 },
-            { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 50 },
-            { name: 'Greek', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 60 },
-            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 70 }
+            { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 778.5, angle: 50 },
+            { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 1434, angle: 100 },
+            { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 4495, angle: 180 },
+            { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 2871, angle: 250 },
+            { name: 'Greek', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 149.6, angle: 0 },
+            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 227.9, angle: 45 }
         ];
 
-        // Create planets
-        planetsData.forEach((data, index) => {
+        // Convert distances from AU to a more manageable scale
+        const scale = 0.1;
+        planetsData.forEach(data => {
+            data.distance *= scale;
+        });
+
+        // Create planets and place them based on their current orbital positions
+        planetsData.forEach((data) => {
             const planetGeometry = new THREE.SphereGeometry(data.size, 32, 32);
             const planetMaterial = new THREE.MeshBasicMaterial({ color: data.color });
             const planet = new THREE.Mesh(planetGeometry, planetMaterial);
-            planet.position.set(data.distance, 0, 0);
+
+            // Calculate the position based on distance and angle
+            const radians = THREE.MathUtils.degToRad(data.angle);
+            planet.position.set(
+                data.distance * Math.cos(radians),
+                0,
+                data.distance * Math.sin(radians)
+            );
             scene.add(planet);
 
             // Add text labels above the planets
@@ -79,16 +126,41 @@
             });
         });
 
+        // Control speed using the slider
+        let speed = 1;
+        document.getElementById('speed-slider').addEventListener('input', function(event) {
+            speed = event.target.value;
+        });
+
+        // Movement control with arrow keys
+        const velocity = new THREE.Vector3();
+        document.addEventListener('keydown', function(event) {
+            switch (event.key) {
+                case 'ArrowUp':
+                    velocity.z = -speed;
+                    break;
+                case 'ArrowDown':
+                    velocity.z = speed;
+                    break;
+                case 'ArrowLeft':
+                    velocity.x = -speed;
+                    break;
+                case 'ArrowRight':
+                    velocity.x = speed;
+                    break;
+            }
+        });
+
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
 
-            // Rotate planets around their axis
-            scene.children.forEach(child => {
-                if (child instanceof THREE.Mesh) {
-                    child.rotation.y += 0.005;
-                }
-            });
+            // Update camera position based on velocity
+            camera.position.add(velocity);
+            controls.update();
+
+            // Slow down velocity over time (inertia)
+            velocity.multiplyScalar(0.98);
 
             renderer.render(scene, camera);
         }
