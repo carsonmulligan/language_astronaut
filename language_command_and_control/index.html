@@ -126,6 +126,15 @@
                 });
                 const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
                 const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+                // Billboard effect: make the text always face the camera
+                textMesh.lookAt(camera.position);
+
+                // Update lookAt to work dynamically
+                planet.update = function () {
+                    textMesh.lookAt(camera.position);
+                };
+
                 textMesh.position.set(-data.size * 1.5, data.size + 2, 0);
                 planet.add(textMesh);
             });
@@ -190,6 +199,13 @@
             // Update camera position based on velocity
             camera.position.add(velocity);
             controls.update();
+
+            // Update lookAt for all planets
+            planets.forEach(planet => {
+                if (planet.mesh.update) {
+                    planet.mesh.update();
+                }
+            });
 
             // Slow down velocity over time (inertia)
             velocity.multiplyScalar(0.98);
