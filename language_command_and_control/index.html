@@ -84,14 +84,36 @@
         const sun = new THREE.Mesh(sunGeometry, sunMaterial);
         scene.add(sun);
 
-        // Planet data (distances in AU, scaled for visualization)
+        // Add Proxima Centauri (approx. 4.24 light years away)
+        const proximaGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const proximaMaterial = new THREE.MeshBasicMaterial({ color: 0xFF4500 });
+        const proximaCentauri = new THREE.Mesh(proximaGeometry, proximaMaterial);
+        proximaCentauri.position.set(-80000, 0, 0); // Scaled for visualization
+        scene.add(proximaCentauri);
+
+        // Add Alpha Centauri A and B (approx. 4.37 light years away)
+        const alphaCentauriAGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+        const alphaCentauriAMaterial = new THREE.MeshBasicMaterial({ color: 0xFFA500 });
+        const alphaCentauriA = new THREE.Mesh(alphaCentauriAGeometry, alphaCentauriAMaterial);
+        alphaCentauriA.position.set(-84000, 0, 0); // Scaled for visualization
+        scene.add(alphaCentauriA);
+
+        const alphaCentauriBGeometry = new THREE.SphereGeometry(1.3, 32, 32);
+        const alphaCentauriBMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFE0 });
+        const alphaCentauriB = new THREE.Mesh(alphaCentauriBGeometry, alphaCentauriBMaterial);
+        alphaCentauriB.position.set(-84050, 0, 0); // Scaled for visualization
+        scene.add(alphaCentauriB);
+
+        // Planet data for Solar System and Alpha Centauri
         const planetsData = [
             { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 778.5, angle: 50 },
             { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 1434, angle: 100 },
             { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 4495, angle: 180 },
             { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 2871, angle: 250 },
             { name: 'Greek', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 149.6, angle: 0 },
-            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 227.9, angle: 45 }
+            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 227.9, angle: 45 },
+            // Add a planet for Alpha Centauri
+            { name: 'Alpha Centauri B b', planet: 'Proxima', size: 1.1, color: 0xFF6347, distance: 80000, angle: 0 }
         ];
 
         // Convert distances from AU to a more manageable scale
