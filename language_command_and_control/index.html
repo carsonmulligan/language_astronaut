@@ -67,23 +67,13 @@
 
         // Create star background
         const starGeometry = new THREE.BufferGeometry();
-        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 });
+        const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
         const starVertices = [];
-
-        // Increase the number of stars
-        for (let i = 0; i < 20000; i++) {
-            starVertices.push(THREE.MathUtils.randFloatSpread(160000)); // x
-            starVertices.push(THREE.MathUtils.randFloatSpread(2000));    // y
-            starVertices.push(THREE.MathUtils.randFloatSpread(160000));  // z
+        for (let i = 0; i < 10000; i++) {
+            starVertices.push(THREE.MathUtils.randFloatSpread(2000)); // x
+            starVertices.push(THREE.MathUtils.randFloatSpread(2000)); // y
+            starVertices.push(THREE.MathUtils.randFloatSpread(2000)); // z
         }
-
-        // Specifically add stars in the gap between Solar System and Alpha Centauri
-        for (let i = 0; i < 5000; i++) {
-            starVertices.push(THREE.MathUtils.randFloat(-40000, -80000)); // x (between Solar System and Alpha Centauri)
-            starVertices.push(THREE.MathUtils.randFloatSpread(2000));     // y
-            starVertices.push(THREE.MathUtils.randFloatSpread(2000));     // z
-        }
-
         starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
         const stars = new THREE.Points(starGeometry, starMaterial);
         scene.add(stars);
@@ -94,36 +84,14 @@
         const sun = new THREE.Mesh(sunGeometry, sunMaterial);
         scene.add(sun);
 
-        // Add Proxima Centauri (approx. 4.24 light years away)
-        const proximaGeometry = new THREE.SphereGeometry(1, 32, 32);
-        const proximaMaterial = new THREE.MeshBasicMaterial({ color: 0xFF4500 });
-        const proximaCentauri = new THREE.Mesh(proximaGeometry, proximaMaterial);
-        proximaCentauri.position.set(-80000, 0, 0); // Scaled for visualization
-        scene.add(proximaCentauri);
-
-        // Add Alpha Centauri A and B (approx. 4.37 light years away)
-        const alphaCentauriAGeometry = new THREE.SphereGeometry(1.5, 32, 32);
-        const alphaCentauriAMaterial = new THREE.MeshBasicMaterial({ color: 0xFFA500 });
-        const alphaCentauriA = new THREE.Mesh(alphaCentauriAGeometry, alphaCentauriAMaterial);
-        alphaCentauriA.position.set(-84000, 0, 0); // Scaled for visualization
-        scene.add(alphaCentauriA);
-
-        const alphaCentauriBGeometry = new THREE.SphereGeometry(1.3, 32, 32);
-        const alphaCentauriBMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFE0 });
-        const alphaCentauriB = new THREE.Mesh(alphaCentauriBGeometry, alphaCentauriBMaterial);
-        alphaCentauriB.position.set(-84050, 0, 0); // Scaled for visualization
-        scene.add(alphaCentauriB);
-
-        // Planet data for Solar System and Alpha Centauri
+        // Planet data (distances in AU, scaled for visualization)
         const planetsData = [
             { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 778.5, angle: 50 },
             { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 1434, angle: 100 },
             { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 4495, angle: 180 },
             { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 2871, angle: 250 },
             { name: 'Greek', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 149.6, angle: 0 },
-            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 227.9, angle: 45 },
-            // Add a planet for Alpha Centauri
-            { name: 'Alpha Centauri B b', planet: 'Proxima', size: 1.1, color: 0xFF6347, distance: 80000, angle: 0 }
+            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 227.9, angle: 45 }
         ];
 
         // Convert distances from AU to a more manageable scale
@@ -181,20 +149,6 @@
             document.getElementById('planet-select').appendChild(option);
         });
 
-        // Add Falcon 9 rocket
-        const falconGeometry = new THREE.CylinderGeometry(0.5, 0.5, 10, 32);
-        const falconMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
-        const falcon9 = new THREE.Mesh(falconGeometry, falconMaterial);
-        falcon9.position.set(0, 0, -20);
-        scene.add(falcon9);
-
-        // Add rocket burners (engines)
-        const burnerGeometry = new THREE.CylinderGeometry(0.2, 0.5, 1, 32);
-        const burnerMaterial = new THREE.MeshBasicMaterial({ color: 0xff4500 });
-        const burner = new THREE.Mesh(burnerGeometry, burnerMaterial);
-        burner.position.set(0, -5.5, 0);
-        falcon9.add(burner);
-
         // Control speed using the slider
         let speed = 1;
         document.getElementById('speed-slider').addEventListener('input', function(event) {
@@ -207,25 +161,17 @@
             switch (event.key) {
                 case 'ArrowUp':
                     velocity.z = -speed;
-                    burner.visible = true;
                     break;
                 case 'ArrowDown':
                     velocity.z = speed;
-                    burner.visible = true;
                     break;
                 case 'ArrowLeft':
                     velocity.x = -speed;
-                    burner.visible = true;
                     break;
                 case 'ArrowRight':
                     velocity.x = speed;
-                    burner.visible = true;
                     break;
             }
-        });
-
-        document.addEventListener('keyup', function(event) {
-            burner.visible = false;
         });
 
         // Fly to selected planet
@@ -252,7 +198,6 @@
 
             // Update camera position based on velocity
             camera.position.add(velocity);
-            falcon9.position.add(velocity);
             controls.update();
 
             // Update lookAt for all planets
