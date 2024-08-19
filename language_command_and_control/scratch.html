@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,12 +87,33 @@
 
         // Planet data (distances in AU, scaled for visualization)
         const planetsData = [
-            { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 778.5, angle: 50 },
-            { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 1434, angle: 100 },
-            { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 4495, angle: 180 },
-            { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 2871, angle: 250 },
+            { name: 'Arabic', planet: 'Mercury', size: 0.4, color: 0x8B4513, distance: 57.9, angle: 20 },
+            { name: 'Turkish', planet: 'Venus', size: 0.9, color: 0xFF6347, distance: 108.2, angle: 30 },
             { name: 'Greek', planet: 'Earth', size: 1.2, color: 0x2E8B57, distance: 149.6, angle: 0 },
-            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 227.9, angle: 45 }
+            { name: 'English', planet: 'Moon', size: 0.3, color: 0xA9A9A9, distance: 0.384, angle: 5 }, // Moon of Earth
+            { name: 'Russian', planet: 'Mars', size: 1.0, color: 0xFF4500, distance: 227.9, angle: 45 },
+            { name: 'Hindi', planet: 'Phobos', size: 0.2, color: 0x708090, distance: 0.009, angle: 50 }, // Moon of Mars
+            { name: 'Bengali', planet: 'Deimos', size: 0.15, color: 0x696969, distance: 0.023, angle: 55 }, // Moon of Mars
+            { name: 'Chinese', planet: 'Jupiter', size: 2.0, color: 0xFFD700, distance: 778.5, angle: 50 },
+            { name: 'Japanese', planet: 'Io', size: 0.35, color: 0xFF4500, distance: 0.422, angle: 60 }, // Moon of Jupiter
+            { name: 'Korean', planet: 'Europa', size: 0.3, color: 0x4682B4, distance: 0.671, angle: 70 }, // Moon of Jupiter
+            { name: 'Vietnamese', planet: 'Ganymede', size: 0.4, color: 0x2F4F4F, distance: 1.07, angle: 80 }, // Moon of Jupiter
+            { name: 'Thai', planet: 'Callisto', size: 0.38, color: 0x8A2BE2, distance: 1.882, angle: 90 }, // Moon of Jupiter
+            { name: 'Spanish', planet: 'Saturn', size: 1.8, color: 0xC0C0C0, distance: 1434, angle: 100 },
+            { name: 'Italian', planet: 'Titan', size: 0.45, color: 0xDAA520, distance: 1.222, angle: 110 }, // Moon of Saturn
+            { name: 'Romanian', planet: 'Rhea', size: 0.3, color: 0xA52A2A, distance: 0.527, angle: 120 }, // Moon of Saturn
+            { name: 'Hungarian', planet: 'Iapetus', size: 0.3, color: 0x778899, distance: 3.56, angle: 130 }, // Moon of Saturn
+            { name: 'Finnish', planet: 'Dione', size: 0.25, color: 0xFFF8DC, distance: 0.377, angle: 140 }, // Moon of Saturn
+            { name: 'French', planet: 'Uranus', size: 1.4, color: 0x00FFFF, distance: 2871, angle: 250 },
+            { name: 'Dutch', planet: 'Titania', size: 0.3, color: 0x8FBC8F, distance: 0.436, angle: 260 }, // Moon of Uranus
+            { name: 'Swedish', planet: 'Oberon', size: 0.29, color: 0x556B2F, distance: 0.583, angle: 270 }, // Moon of Uranus
+            { name: 'Norwegian', planet: 'Ariel', size: 0.25, color: 0x6495ED, distance: 0.19, angle: 280 }, // Moon of Uranus
+            { name: 'Danish', planet: 'Umbriel', size: 0.24, color: 0x483D8B, distance: 0.27, angle: 290 }, // Moon of Uranus
+            { name: 'Portuguese', planet: 'Neptune', size: 1.6, color: 0x0000FF, distance: 4495, angle: 180 },
+            { name: 'Polish', planet: 'Triton', size: 0.35, color: 0x7FFFD4, distance: 0.354, angle: 190 }, // Moon of Neptune
+            { name: 'Czech', planet: 'Proteus', size: 0.25, color: 0x8A2BE2, distance: 0.117, angle: 200 }, // Moon of Neptune
+            { name: 'Greek', planet: 'Pluto', size: 0.2, color: 0xBC8F8F, distance: 5906, angle: 210 },
+            { name: 'Croatian', planet: 'Charon', size: 0.18, color: 0xD2B48C, distance: 0.019, angle: 220 }  // Moon of Pluto
         ];
 
         // Convert distances from AU to a more manageable scale
@@ -102,12 +124,13 @@
 
         // Create planets and place them based on their current orbital positions
         const planets = [];
+        const moons = []; // Array to store moons for relative positioning
         planetsData.forEach((data) => {
             const planetGeometry = new THREE.SphereGeometry(data.size, 32, 32);
             const planetMaterial = new THREE.MeshBasicMaterial({ color: data.color });
             const planet = new THREE.Mesh(planetGeometry, planetMaterial);
 
-            // Calculate the position based on distance and angle
+            // Calculate the position based on distance and angle from the sun
             const radians = THREE.MathUtils.degToRad(data.angle);
             planet.position.set(
                 data.distance * Math.cos(radians),
@@ -142,11 +165,58 @@
             // Add planet to array for future reference
             planets.push({ name: data.name, mesh: planet });
 
-            // Add planet to dropdown menu
-            const option = document.createElement('option');
-            option.value = data.name;
-            option.text = data.name;
-            document.getElementById('planet-select').appendChild(option);
+            // If it's a moon, store it for relative positioning
+            if (data.planet !== data.name) {
+                moons.push({ name: data.name, planet: planet, distance: data.distance, angle: data.angle, size: data.size, color: data.color });
+            } else {
+                // Add planet to dropdown menu
+                const option = document.createElement('option');
+                option.value = data.name;
+                option.text = data.name;
+                document.getElementById('planet-select').appendChild(option);
+            }
+        });
+
+        // Create moons and place them relative to their planets
+        moons.forEach((moonData) => {
+            const moonGeometry = new THREE.SphereGeometry(moonData.size, 32, 32);
+            const moonMaterial = new THREE.MeshBasicMaterial({ color: moonData.color });
+            const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+
+            // Calculate the position based on distance and angle from the parent planet
+            const radians = THREE.MathUtils.degToRad(moonData.angle);
+            moon.position.set(
+                moonData.distance * Math.cos(radians),
+                0,
+                moonData.distance * Math.sin(radians)
+            );
+
+            // Position the moon relative to its planet
+            moon.position.add(moonData.planet.position);
+            scene.add(moon);
+
+            // Add text labels above the moons
+            const loader = new THREE.FontLoader();
+            loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+                const textGeometry = new THREE.TextGeometry(`${moonData.name} (${moonData.planet.name})`, {
+                    font: font,
+                    size: 1.0,
+                    height: 0.1,
+                });
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+                // Billboard effect: make the text always face the camera
+                textMesh.lookAt(camera.position);
+
+                // Update lookAt to work dynamically
+                moon.update = function () {
+                    textMesh.lookAt(camera.position);
+                };
+
+                textMesh.position.set(-moonData.size * 1.5, moonData.size + 1, 0);
+                moon.add(textMesh);
+            });
         });
 
         // Control speed using the slider
